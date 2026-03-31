@@ -15,95 +15,133 @@ body {
     font-family: Arial;
 }
 
+/* écran accueil */
+#menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#gameContainer {
+    display: none;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 20px;
+    border: none;
+    border-radius: 10px;
+    background: #4CAF50;
+    color: white;
+}
+
+/* canvas */
 canvas {
     background: #111;
     margin-top: 10px;
 }
 
-/* Boutons */
+/* boutons */
 .controls {
     margin-top: 15px;
 }
 
-button {
+.controls button {
     width: 70px;
     height: 70px;
     margin: 5px;
     font-size: 24px;
-    border: none;
-    border-radius: 10px;
     background: #333;
-    color: white;
-}
-
-button:active {
-    background: #555;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Snake</h2>
-<p id="score">Score: 0</p>
+<!-- MENU -->
+<div id="menu">
+    <h1>Snake Game</h1>
+    <button onclick="startGame()">Commencer l’aventure</button>
+</div>
 
-<canvas id="game" width="300" height="300"></canvas>
+<!-- JEU -->
+<div id="gameContainer">
+    <h2>Snake</h2>
+    <p id="score">Score: 0</p>
 
-<div class="controls">
-    <div>
-        <button onclick="setDir(0,-1)">⬆️</button>
-    </div>
-    <div>
-        <button onclick="setDir(-1,0)">⬅️</button>
-        <button onclick="setDir(1,0)">➡️</button>
-    </div>
-    <div>
-        <button onclick="setDir(0,1)">⬇️</button>
+    <canvas id="game" width="300" height="300"></canvas>
+
+    <div class="controls">
+        <div>
+            <button onclick="setDir(0,-1)">⬆️</button>
+        </div>
+        <div>
+            <button onclick="setDir(-1,0)">⬅️</button>
+            <button onclick="setDir(1,0)">➡️</button>
+        </div>
+        <div>
+            <button onclick="setDir(0,1)">⬇️</button>
+        </div>
     </div>
 </div>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+let snake, direction, food, score, interval;
 
-let snake = [{x: 10, y: 10}];
-let direction = {x: 1, y: 0};
-let food = {x: 5, y: 5};
-let score = 0;
+function startGame() {
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("gameContainer").style.display = "block";
+
+    initGame();
+}
+
+function initGame() {
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    snake = [{x: 10, y: 10}];
+    direction = {x: 1, y: 0};
+    food = {x: 5, y: 5};
+    score = 0;
+
+    document.getElementById("score").innerText = "Score: 0";
+
+    if (interval) clearInterval(interval);
+
+    interval = setInterval(() => {
+        update(ctx);
+        draw(ctx);
+    }, 150);
+}
 
 function setDir(x, y) {
     direction = {x, y};
 }
 
-function draw() {
+function draw(ctx) {
     ctx.fillStyle = "#111";
     ctx.fillRect(0, 0, 300, 300);
 
-    // snake
     ctx.fillStyle = "lime";
     snake.forEach(part => {
         ctx.fillRect(part.x * 15, part.y * 15, 14, 14);
     });
 
-    // food
     ctx.fillStyle = "red";
     ctx.fillRect(food.x * 15, food.y * 15, 14, 14);
 }
 
-function update() {
+function update(ctx) {
     let head = {...snake[0]};
     head.x += direction.x;
     head.y += direction.y;
 
-    // collision mur
-    if (head.x < 0 || head.y < 0 || head.x >= 20 || head.y >= 20) {
-        alert("Game Over");
-        location.reload();
-    }
-
-    // collision soi-même
-    if (snake.some(p => p.x === head.x && p.y === head.y)) {
-        alert("Game Over");
+    if (head.x < 0 || head.y < 0 || head.x >= 20 || head.y >= 20 ||
+        snake.some(p => p.x === head.x && p.y === head.y)) {
+        
+        alert("Game Over - Score: " + score);
         location.reload();
     }
 
@@ -121,18 +159,13 @@ function update() {
     }
 }
 
-// clavier (PC)
+// clavier
 document.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") setDir(0,-1);
     if (e.key === "ArrowDown") setDir(0,1);
     if (e.key === "ArrowLeft") setDir(-1,0);
     if (e.key === "ArrowRight") setDir(1,0);
 });
-
-setInterval(() => {
-    update();
-    draw();
-}, 150);
 </script>
 
 </body>
